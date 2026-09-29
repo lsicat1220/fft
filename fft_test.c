@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
-#include "../src/complex.h"
-#include "../src/fft.h"
+#include "complex.h"
+#include "fft.h"
 
 #define record_time(function, output) \
 	do { \
