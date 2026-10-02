@@ -4,8 +4,8 @@
 #include "complex.h"
 #include "fft.h"
 
-#define MAX_N 256
-#define NUM_CALLS 50 
+#define MAX_N 1024
+#define NUM_CALLS 100
 int main() {
 	printf("Benchmark test\n\n");
 	const int seed = 676767;
@@ -24,19 +24,16 @@ int main() {
 	fft(y, MAX_N, fft_output, twiddles);
 	static volatile double sink;
 	
-	for (int power = 4; power <= 8; power++) {
+	for (int power = 4; power <= 9; power++) {
 		int n = 1<<power;
 		double checksum = 0;
 		printf("[n = %d]\n", n);
 		clock_gettime(CLOCK_MONOTONIC, &start);
 		for (int i = 0; i < NUM_CALLS; i++) {
 			dft(y, n, dft_output);
-			for (int j = 0; j < n; j++) {
-				checksum += dft_output[j].real + dft_output[j].imag;
-			}
-			sink = checksum;
 		}
 		clock_gettime(CLOCK_MONOTONIC, &end);
+		sink = dft_output[0].real + dft_output[0].imag;
 		dft_elapsed_time = (end.tv_sec - start.tv_sec) + (double)(end.tv_nsec - start.tv_nsec) / 1e9;
 		dft_elapsed_time /= NUM_CALLS;
 		printf("DFT elapsed time per call: %lf\n", dft_elapsed_time);
@@ -44,12 +41,9 @@ int main() {
 		clock_gettime(CLOCK_MONOTONIC, &start);
 		for (int i = 0; i < NUM_CALLS; i++) {
 			fft(y, n, fft_output, twiddles);
-			for (int j = 0; j < n; j++) {
-				checksum += fft_output[j].real + fft_output[j].imag;
-			}
-			sink = checksum;
 		}
 		clock_gettime(CLOCK_MONOTONIC, &end);
+		sink += fft_output[0].real + fft_output[0].imag;
 		fft_elapsed_time = (end.tv_sec - start.tv_sec) + (double)(end.tv_nsec - start.tv_nsec) / 1e9;
 		fft_elapsed_time /= NUM_CALLS;
 		printf("FFT elapsed time per call: %lf\n", fft_elapsed_time);
