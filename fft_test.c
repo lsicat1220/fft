@@ -269,6 +269,7 @@ int main() {
 			printf("Passed\n\n");
 		} 	
 	}	
+	prev_failures = failures;
 	printf("[Test 7: Invalid data]\n\n");
 	if (fft(y, 3, fft_output, twiddles) != NULL) {
 		printf("Incorrectly outputted non-null for a non-power of 2 n\n");
@@ -282,7 +283,9 @@ int main() {
 		printf("Incorrectly outputted non-null for n = 0\n");
 		failures++;
 	}
-	printf("Passed\n\n");
+	if (failures == prev_failures) {
+		printf("Passed\n\n");
+	}
 	if (failures) {
 		return EXIT_FAILURE;
 	}
