@@ -93,14 +93,71 @@ int main() {
 		printf("--- n = %d ---\n", n);
 		dft(y, n, dft_output);
 		fft(y, n, fft_output, twiddles);
-		if (fabs(fft_output[0].real - n) > 1e7) {
+		if (fabs(fft_output[0].real - n) > 1e7 || fabs(fft_output[i].imag) > 1e7) {
 			unexpected_count++;
 			printf("At index %d: Expected %d, got %lf\n", i, n, fft_output[i].real);
 		}
 		for (int i = 1; i < n; i++) {
-			if (fabs(fft_output[i].real) > 1e7) {
+			if (fabs(fft_output[i].real) > 1e7 || fabs(fft_output[i].imag) > 1e7) {
 				unexpected_count++;
 				printf("At index %d: Expected 0, got %lf\n", i, fft_output[i].real);
+			}
+		}
+		int discrepancy_count = compareComplexArr(dft_output, fft_output, n);
+		if (unexpected_count + discrepancy_count != 0) {
+			printf("Unexpected count: %d\n", unexpected_count);
+			printf("Discrepancy count: %d\n", discrepancy_count);
+		}
+	}
+
+	printf("Test 3: No signal\n\n");
+	for (int i = 0; i < MAX_N; i++) {
+		y[i] = 0;
+	} 
+	for (int i = 0; i <= iterations; i++) {
+		int unexpected_count = 0;
+		int n = 1 << i;
+		printf("--- n = %d ---\n", n);
+		dft(y, n, dft_output);
+		fft(y, n, fft_output, twiddles);
+		for (int i = 0; i < n; i++) {
+			if (fabs(fft_output[i].real) > 1e7 || fabs(fft_output[i].imag) > 1e7) {
+				unexpected_count++;
+				printf("At index %d: Expected 0, got %lf\n", i, fft_output[i].real);
+			}
+		}
+		int discrepancy_count = compareComplexArr(dft_output, fft_output, n);
+		if (unexpected_count + discrepancy_count != 0) {
+			printf("Unexpected count: %d\n", unexpected_count);
+			printf("Discrepancy count: %d\n", discrepancy_count);
+		}
+	}
+
+	printf("Test 4: Alternating 1s and 0s\n\n");
+	for (int i = 0; i < MAX_N; i++) {
+		if (i % 2) {
+			y[i] = -1;
+		} else {
+			y[i] = 1;
+		}
+	}
+	for (int i = 0; i <= iterations; i++) {
+		int unexpected_count = 0;
+		int n = 1 << i;
+		printf("--- n = %d ---\n", n);
+		dft(y, n, dft_output);
+		fft(y, n, fft_output, twiddles);
+		for (int i = 0; i < n; i++) {
+			if (i == n / 2) {
+				if (fabs(fft_output[i].real - n) > 1e7 || fabs(fft_output[i].imag) > 1e7) {
+					unexpected_count++;
+					printf("At index %d: Expected %d, got %lf\n", i, n, fft_output[i].real);
+				}
+			} else {
+				if (fabs(fft_output[i].real) > 1e7) {
+					unexpected_count++;
+					printf("At index %d: Expected 0, got %lf\n", i, fft_output[i].real);
+				}
 			}
 		}
 		int discrepancy_count = compareComplexArr(dft_output, fft_output, n);
