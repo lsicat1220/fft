@@ -7,6 +7,8 @@
 Complex* dft(double* arr, int N, Complex* output) {
 	for (int k = 0; k < N; k++) {
 		// printf("k = %d\n", k);
+		output[k].real = 0;
+		output[k].imag = 0;
 		for (int n = 0; n < N; n++) {
 			//printf("\tn = %d\n", n);
 			Complex term = {arr[n], 0};
