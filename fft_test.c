@@ -92,18 +92,22 @@ int main() {
 		int n = 1 << i;
 		printf("--- n = %d ---\n", n);
 		dft(y, n, dft_output);
-		fft(y, n, dft_output, twiddles);
+		fft(y, n, fft_output, twiddles);
 		if (fabs(fft_output[0].real - n) > 1e7) {
 			unexpected_count++;
 			printf("At index %d: Expected %d, got %lf\n", i, n, fft_output[i].real);
 		}
-		for (int i = 0; i < n; i++) {
+		for (int i = 1; i < n; i++) {
 			if (fabs(fft_output[i].real) > 1e7) {
+				unexpected_count++;
 				printf("At index %d: Expected 0, got %lf\n", i, fft_output[i].real);
 			}
-			unexpected_count++;
 		}
 		int discrepancy_count = compareComplexArr(dft_output, fft_output, n);
+		if (unexpected_count + discrepancy_count != 0) {
+			printf("Unexpected count: %d\n", unexpected_count);
+			printf("Discrepancy count: %d\n", discrepancy_count);
+		}
 	}
 	return 0;
 }
