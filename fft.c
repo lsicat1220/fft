@@ -184,5 +184,39 @@ Complex* fft(double* arr, int N, Complex* output, Complex* twiddles) {
 	return output;
 }
 
-
+Complex* fft_complex(Complex* arr, int N, Complex* output, Complex* twiddles) {
+	int power = whatPowerOf2(N);
+	if (power == -1) {
+		return NULL;
+	}
+	int stored_num = (N / 2) - 1;
+	for (int k = 1; k <= stored_num; k++) {
+		twiddles[k - 1] = complexExp(-2 * M_PI * (double)k / N);
+	}
+	for (int i = 0; i < N; i++) {
+		int index = reverseBits(power, i);
+		output[i].real = arr[index].real;
+		output[i].imag = arr[index].imag;
+	}	
+	for (int stride = 1; stride < N; stride *= 2) {
+		for (int k = 0; k < stride; k++) {
+			for (int i = k; i < N; i += stride * 2) {
+				Complex rhs;
+				if (k != 0) {
+					int index = (k * (N / (stride * 2))) - 1;
+					rhs = complexMult(output[i + stride], twiddles[index]);
+				} else {
+					rhs = output[i + stride];
+				}
+				Complex sum1 = complexAdd(output[i], rhs);
+				rhs.real *= -1;
+				rhs.imag *= -1;
+				Complex sum2 = complexAdd(output[i], rhs);
+				output[i] = sum1;
+				output[i + stride] = sum2;
+			}	
+		}
+	}
+	return output;
+}
 

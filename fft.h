@@ -13,6 +13,8 @@ Complex* fft_nocache(double* arr, int N, Complex* output);
 
 Complex* fft(double* arr, int N, Complex* output, Complex* twiddles);
 
+Complex* fft_complex(Complex* arr, int N, Complex* output, Complex* twiddles);
+
 int whatPowerOf2 (int N);
 
 #endif
