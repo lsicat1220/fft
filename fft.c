@@ -4,13 +4,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-Complex* dft(Complex* arr, int N, Complex* output) {
+Complex* dft(double* arr, int N, Complex* output) {
 	for (int k = 0; k < N; k++) {
 		// printf("k = %d\n", k);
 		for (int n = 0; n < N; n++) {
 			//printf("\tn = %d\n", n);
+			Complex term = {arr[n], 0};
 			Complex omega = complexExp(-2 * M_PI * ((double)k / (double)N) * n);
-			Complex product = complexMult(arr[n], omega);
+			Complex product = complexMult(term, omega);
 			output[k] = complexAdd(output[k], product);
 			// printf("\t\toutput[k] = %lf + j%lf\n", output[k].real, output[k].imag);
 		}
@@ -21,7 +22,7 @@ Complex* dft(Complex* arr, int N, Complex* output) {
 Complex* naive_fft(Complex* arr, int N, int stride) {
 	Complex* output = malloc(sizeof(Complex) * N);
 
-	if ((N & N - 1) != 0)	{
+	if ((N & (N - 1)) != 0)	{
 		fputs("ERROR: Must be a power of 2\n", stderr);
 		return NULL;
 	} else if (N == 1) {
@@ -48,7 +49,7 @@ Complex* naive_fft(Complex* arr, int N, int stride) {
 
 int whatPowerOf2 (int N) {
 	int output = 0;
-	if ((N & N - 1) != 0)	{
+	if ((N & (N - 1)) != 0)	{
 		fputs("ERROR: Must be a power of 2\n", stderr);
 		return -1;
 	}
