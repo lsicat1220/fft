@@ -54,16 +54,16 @@ int main() {
 		dft(y, n, dft_output);
 		fft(y, n, fft_output, twiddles);	
 		for (int i = 0; i < n; i++) {
-			if (fft_output[i].real - 1 > 1e-7 || fft_output[i].imag > 1e-7) {
+			if (fabs(fft_output[i].real - 1) > 1e-7 || fft_output[i].imag > 1e-7) {
 				unexpected_count++;
 			}
 			double delta_real = fabs(fft_output[i].real - dft_output[i].real);
 			double delta_imag = fabs(fft_output[i].imag - dft_output[i].imag);
-			if (delta_real > 1e-7 + 1e-7 * dft_output[i].real) {
+			if (delta_real > 1e-7 + 1e-7 * fabs(dft_output[i].real)) {
 				printf("Significant real delta at i = %d: %lf\n", i, delta_real);
 				discrepancy_count++;
 			}
-			if (delta_imag > 1e-7 + 1e-7 * dft_output[i].imag) {
+			if (delta_imag > 1e-7 + 1e-7 * fabs(dft_output[i].imag)) {
 				printf("Significant imaginary delta at i = %d: %lf\n", i, delta_imag);
 				discrepancy_count++;
 			}
@@ -73,5 +73,7 @@ int main() {
 			printf("Discrepancy count: %d\n", discrepancy_count);
 		}
 	}
+
+	printf("")
 	return 0;
 }
