@@ -54,6 +54,9 @@ int whatPowerOf2 (int N) {
 	if ((N & (N - 1)) != 0)	{
 		fputs("ERROR: Must be a power of 2\n", stderr);
 		return -1;
+	} else if (N == 0) {
+		fputs("ERROR: Must be non-zero\n", stderr);
+		return -1;
 	}
 	for (; N > 1; N>>=1) {
 		output++;

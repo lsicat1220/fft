@@ -225,7 +225,7 @@ int main() {
 	if (failures == prev_failures) {
 		printf("Passed\n\n");
 	} 	
-	printf("[Test 6: Random data]\n\n");
+	printf("[Test 6: Random data & Reverse FFT]\n\n");
 	prev_failures = failures;
 	const int seed = 676767;
 	srand(seed);
@@ -270,7 +270,19 @@ int main() {
 		} 	
 	}	
 	printf("[Test 7: Invalid data]\n\n");
-
+	if (fft(y, 3, fft_output, twiddles) != NULL) {
+		printf("Incorrectly outputted non-null for a non-power of 2 n\n");
+		failures++;
+	}
+	if (fft(y, -1, fft_output, twiddles) != NULL) {
+		printf("Incorrectly outputted non-null for n = -1\n");
+		failures++;
+	}
+	if (fft(y, 0, fft_output, twiddles) != NULL) {
+		printf("Incorrectly outputted non-null for n = 0\n");
+		failures++;
+	}
+	printf("Passed\n\n");
 	if (failures) {
 		return EXIT_FAILURE;
 	}
