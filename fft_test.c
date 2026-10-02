@@ -33,7 +33,9 @@ int compareComplexArr(Complex* reference, Complex* arr, int n) {
 	for (int i = 0; i < n; i++) {
 		double delta_real = fabs(arr[i].real - reference[i].real);
 		double delta_imag = fabs(arr[i].imag - reference[i].imag);
-		int discrepancy_count = 0;
+		if (!isfinite(delta_real) || !isfinite(delta_imag)) {
+			discrepancy_count++;
+		}
 		if (delta_real > 1e-7 + 1e-7 * fabs(reference[i].real)) {
 			printf("Significant real delta at i = %d: %lf\n", i, delta_real);
 			discrepancy_count++;
@@ -51,6 +53,7 @@ int main() {
 	
 	double y[MAX_N];
 	int iterations = whatPowerOf2(MAX_N);
+	int failures = 0;
 
 	Complex fft_output[MAX_N];
 	Complex dft_output[MAX_N];
@@ -71,7 +74,7 @@ int main() {
 		dft(y, n, dft_output);
 		fft(y, n, fft_output, twiddles);	
 		for (int i = 0; i < n; i++) {
-			if (fabs(fft_output[i].real - 1) > 1e-7 || fft_output[i].imag > 1e-7) {
+			if (fabs(fft_output[i].real - 1) > 1e-7 || fabs(fft_output[i].imag) > 1e-7) {
 				printf("At index %d: Expected 1, got %lf\n", i, fft_output[i].real);
 				unexpected_count++;
 			}
@@ -80,6 +83,7 @@ int main() {
 		if (unexpected_count + discrepancy_count != 0) {
 			printf("Unexpected count: %d\n", unexpected_count);
 			printf("Discrepancy count: %d\n", discrepancy_count);
+			failures++;
 		}
 	}
 
@@ -93,20 +97,21 @@ int main() {
 		printf("--- n = %d ---\n", n);
 		dft(y, n, dft_output);
 		fft(y, n, fft_output, twiddles);
-		if (fabs(fft_output[0].real - n) > 1e7 || fabs(fft_output[i].imag) > 1e7) {
+		if (fabs(fft_output[0].real - n) > 1e-7 || fabs(fft_output[0].imag) > 1e-7) {
 			unexpected_count++;
-			printf("At index %d: Expected %d, got %lf\n", i, n, fft_output[i].real);
+			printf("At index 0: Expected %d, got %lf\n", n, fft_output[0].real);
 		}
-		for (int i = 1; i < n; i++) {
-			if (fabs(fft_output[i].real) > 1e7 || fabs(fft_output[i].imag) > 1e7) {
+		for (int j = 1; j < n; j++) {
+			if (fabs(fft_output[j].real) > 1e-7 || fabs(fft_output[j].imag) > 1e-7) {
 				unexpected_count++;
-				printf("At index %d: Expected 0, got %lf\n", i, fft_output[i].real);
+				printf("At index %d: Expected 0, got %lf\n", j, fft_output[j].real);
 			}
 		}
 		int discrepancy_count = compareComplexArr(dft_output, fft_output, n);
 		if (unexpected_count + discrepancy_count != 0) {
 			printf("Unexpected count: %d\n", unexpected_count);
 			printf("Discrepancy count: %d\n", discrepancy_count);
+			failures++;
 		}
 	}
 
@@ -121,7 +126,7 @@ int main() {
 		dft(y, n, dft_output);
 		fft(y, n, fft_output, twiddles);
 		for (int i = 0; i < n; i++) {
-			if (fabs(fft_output[i].real) > 1e7 || fabs(fft_output[i].imag) > 1e7) {
+			if (fabs(fft_output[i].real) > 1e-7 || fabs(fft_output[i].imag) > 1e-7) {
 				unexpected_count++;
 				printf("At index %d: Expected 0, got %lf\n", i, fft_output[i].real);
 			}
@@ -130,10 +135,11 @@ int main() {
 		if (unexpected_count + discrepancy_count != 0) {
 			printf("Unexpected count: %d\n", unexpected_count);
 			printf("Discrepancy count: %d\n", discrepancy_count);
+			failures++;
 		}
 	}
 
-	printf("Test 4: Alternating 1s and 0s\n\n");
+	printf("Test 4: Alternating -1 and 1\n\n");
 	for (int i = 0; i < MAX_N; i++) {
 		if (i % 2) {
 			y[i] = -1;
@@ -149,12 +155,12 @@ int main() {
 		fft(y, n, fft_output, twiddles);
 		for (int i = 0; i < n; i++) {
 			if (i == n / 2) {
-				if (fabs(fft_output[i].real - n) > 1e7 || fabs(fft_output[i].imag) > 1e7) {
+				if (fabs(fft_output[i].real - n) > 1e-7 || fabs(fft_output[i].imag) > 1e-7) {
 					unexpected_count++;
 					printf("At index %d: Expected %d, got %lf\n", i, n, fft_output[i].real);
 				}
 			} else {
-				if (fabs(fft_output[i].real) > 1e7) {
+				if (fabs(fft_output[i].real) > 1e-7 || fabs(fft_output[i].imag) > 1e-7) {
 					unexpected_count++;
 					printf("At index %d: Expected 0, got %lf\n", i, fft_output[i].real);
 				}
@@ -164,7 +170,42 @@ int main() {
 		if (unexpected_count + discrepancy_count != 0) {
 			printf("Unexpected count: %d\n", unexpected_count);
 			printf("Discrepancy count: %d\n", discrepancy_count);
+			failures++;
 		}
+	}
+	printf("Test 5: Cosine wave\n\n");
+	const int k = 3;
+	for (int i = 2; i <= iterations; i++) {
+		int unexpected_count = 0;
+		int n = 1 << i;
+		printf("--- n = %d ---\n", n);
+		for (int j = 0; j < n; j++) {
+			y[j] = cos(2 * M_PI * ((double) k / (double) n) * j);
+		}
+		dft(y, n, dft_output);
+		fft(y, n, fft_output, twiddles);
+		for (int i = 0; i < n; i++) {
+			if (i == k || i == n - k) {
+				if (fabs(fft_output[i].real - (double)n/2) > 1e-7 || fabs(fft_output[i].imag) > 1e-7) {
+					unexpected_count++;
+					printf("At index %d: Expected %d, got %lf\n", i, n/2, fft_output[i].real);
+				}
+			} else {
+				if (fabs(fft_output[i].real) > 1e-7 || fabs(fft_output[i].imag) > 1e-7) {
+					unexpected_count++;
+					printf("At index %d: Expected 0, got %lf\n", i, fft_output[i].real);
+				}
+			}
+		}
+		int discrepancy_count = compareComplexArr(dft_output, fft_output, n);
+		if (unexpected_count + discrepancy_count != 0) {
+			printf("Unexpected count: %d\n", unexpected_count);
+			printf("Discrepancy count: %d\n", discrepancy_count);
+			failures++;
+		}
+	}
+	if (failures) {
+		return EXIT_FAILURE;
 	}
 	return 0;
 }
